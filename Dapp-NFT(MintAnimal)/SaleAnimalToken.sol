@@ -70,4 +70,66 @@ contract SaleAnimalToken {
         onSaleAnimalTokenArray.push(_animalTokenId);
         // 어떤게 판매중인지 확인하는 배열
     }
+
+    function purchaseAnimalToken(uint256 _animalTokenId) public payable {
+        // payable 👉 토큰을 전송하거나 받을때 payable 가 필요하다
+        uint256 price = animalTokenPrices[_animalTokenId];
+        // mapping을 이용한 값 가져옴
+        address animalTokenOwner = mintAnimalTokenAddress.ownerOf(
+            _animalTokenId
+        );
+        // 판매할때 사용했던 코드랑 같다
+
+        require(price > 0, "Animal token not sale");
+        // 가격이 0 보다 큰경우는 판매 등록이 되었다는 뜻 👉 0보다 크면 다음줄 👉 아니면 에러 문구를 출력
+        //--------------------------------------------
+
+        require(price <= msg.value, "Caller sent lower than price");
+        // msg.value 👉 송금보낸 코인의 값
+        // 판매하는 가격이 송금을 보낼 코인의 값과 같거나 클경우 👉 다음줄 👉 아니면 에러 문구를 출력
+        //--------------------------------------------
+
+        require(animalTokenOwner != msg.sender, "Caller is animal token owner");
+        // 판매할때랑은 반대로 animalTokenOwner 소유주가 아닌지 확인 👉 소유주가 아니면 다음 👉 소유주면 에러 문구를 출력
+        //--------------------------------------------
+
+        payable(animalTokenOwner).transfer(msg.value);
+        // transfer 👉 2300 gas를 소비 / 실패시 에러를 발생시킨다
+        // animalTokenOwner - NFT 소유주가 코인 송금을 받는다
+
+        mintAnimalTokenAddress.safeTransferFrom(
+            animalTokenOwner,
+            msg.sender,
+            _animalTokenId
+        );
+        // NFT 소유주에게 코인을 송금 보낸후 내가 NFT를 받는 코드👆
+        // ERC-721 내장함수 - safeTransferFrom 👉 받는주소가 NFT를 받을 수 있는지 확인 후 NFT 소유권 전송
+        // safeTransferFrom(from보내는사람, to받는사람, tokenId 뭘보낼지);
+        //--------------------------------------------
+
+        // 이제 NFT가 팔렸으니 판매자는 판매중인 배열에서 빼야한다 (=초기화 해야한다)
+        // 1. mapping에서 제거 하기
+        animalTokenPrices[_animalTokenId] = 0;
+        // _animalTokenId을 넣어서 가격을 0으로 초기화 시킨다
+
+        // 2. 배열에서 제거하기
+        for (uint256 i = 0; i < onSaleAnimalTokenArray.length; i++) {
+            // onSaleAnimalTokenArray 배열안에 객체를 하나씩 순회함
+            if (animalTokenPrices[onSaleAnimalTokenArray[i]] == 0) {
+                // 판매중인 것은 가격이 존재하는데 이미 팔린것은 0원 이기때문에 / 0원짜리를 제거 해줘야한다
+                onSaleAnimalTokenArray[i] = onSaleAnimalTokenArray[
+                    onSaleAnimalTokenArray.length - 1
+                ];
+                // 배열을 순회해서 현재 가격이 0원인 객체를 찾으면 👉 배열의 맨뒤로 보낸다 (length - 1)
+                onSaleAnimalTokenArray.pop();
+                // 배열의 맨뒤로 간 객체를 pop 을 이용해 제거한다
+            }
+        }
+    }
+
+    function getonSaleAnimalTokenArrayLength() public view returns (uint256) {
+        // ⭐ view는 읽기전용이라는 뜻
+        return onSaleAnimalTokenArray.length;
+        // 판매중인 토큰의 배열 목록(길이)
+    }
 }
