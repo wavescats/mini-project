@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "MintAnimalToken.sol";
+import "./MintAnimalToken.sol";
 
 // MintAnimalToken.sol 파일을 불러옴
 
