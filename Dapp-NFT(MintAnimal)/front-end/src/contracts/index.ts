@@ -535,8 +535,11 @@ const mintAnimalTokenAddress = "0x9bADD7AB6c2d6929bf8483Db8aBD9D71EFd49E29";
 const saleAnimalTokenAddress = "0x01F1A290D1954f770B4CeF170EBF1DeE474Ceb3F";
 
 export const web3 = new Web3(window.ethereum);
+// 👉 메타마스크가 설치되어있으면 따로 import하지 않아도 작동하는 모듈 (window.ethereum)
 
 export const mintAnimalTokenContract = new web3.eth.Contract(
+  // ⭐ 개발자는 '스마트 컨트랙트 주소'와 'ABI'를 알면 'web3.js' 를 통해
+  // ⭐ 스마트 컨트랙트를 생성하고 / 특정 함수를 실행할 수 있다
   mintAnimalTokenAbi,
   mintAnimalTokenAddress
 );
