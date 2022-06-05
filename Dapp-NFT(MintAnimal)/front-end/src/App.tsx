@@ -7,7 +7,7 @@ const App: FC = () => {
 
   const getAccount = async () => {
     try {
-      // try 문 안의 코드가 쭉 실행되고 에러가 없다면 catch는 건너뛴다
+      // 👉 try 문 안의 코드가 쭉 실행되고 에러가 없다면 catch는 건너뛴다
       if (window.ethereum) {
         // if 👉 메타마스크가 설치되어있으면 실행된다
         const accounts = await window.ethereum.request({
