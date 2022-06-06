@@ -29,12 +29,12 @@ const App: FC = () => {
 
   useEffect(() => {
     getAccount(); // getAccount 한번만 실행
-  }, []);
+  }, [account]);
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Main />} />
+        <Route path="/" element={<Main account={account} />} />
       </Routes>
     </BrowserRouter>
   );
