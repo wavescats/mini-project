@@ -1,6 +1,8 @@
 import React, { FC, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
 import Main from "./routes/main";
+import MyAnimal from "./routes/my-animal";
 
 const App: FC = () => {
   const [account, setAccount] = useState<string>("");
@@ -33,9 +35,13 @@ const App: FC = () => {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Main account={account} />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Main account={account} />} />
+          <Route path="my-animal" element={<MyAnimal account={account} />} />
+          {/* path는 http://localhost:3000/my-animal 라는 뜻 / account는 👉 나의 메타마스크 주소*/}
+        </Routes>
+      </Layout>
     </BrowserRouter>
   );
 };
