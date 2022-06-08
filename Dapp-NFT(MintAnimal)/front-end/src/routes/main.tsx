@@ -32,7 +32,7 @@ const Main: FC<MainProps> = ({ account }) => {
 
         const animalTokenId = await mintAnimalTokenContract.methods
           // 스마트컨트랙트 배포후에 나오는 함수
-          .tokenOfOwnerByIndex(account, parseInt(balanceLength, 10) - 32)
+          .tokenOfOwnerByIndex(account, parseInt(balanceLength, 10) - 1)
           // NFT의 Id 값을 조회 (인자는 주소와, 조회하려는 배열순번)
           // length - 1 은 배열의 마지막을 불러온다는 뜻
           // 현재 준비된 이미지가 5개밖에 없어서 민팅된 수량에 따라 조절해주면된다 -30

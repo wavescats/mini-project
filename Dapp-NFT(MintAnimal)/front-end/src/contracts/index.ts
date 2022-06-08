@@ -532,7 +532,8 @@ const saleAnimalTokenAbi: AbiItem[] = [
 
 // remix IDE 에서 메타마스크로 각각 배포하고 나온 컨트랙트 주소를 복사해온다
 const mintAnimalTokenAddress = "0x9bADD7AB6c2d6929bf8483Db8aBD9D71EFd49E29";
-const saleAnimalTokenAddress = "0x01F1A290D1954f770B4CeF170EBF1DeE474Ceb3F";
+export const saleAnimalTokenAddress =
+  "0x01F1A290D1954f770B4CeF170EBF1DeE474Ceb3F";
 
 export const web3 = new Web3(window.ethereum);
 // 👉 메타마스크가 설치되어있으면 따로 import하지 않아도 작동하는 모듈 (window.ethereum)
