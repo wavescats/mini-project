@@ -11,6 +11,7 @@ const AnimalCard: FC<AnimalCardProps> = ({ animalType }) => {
   return (
     <Image w={100} h={100} src={`images/${animalType}.png`} alt="AnimalCard" />
     // animalType을 통해 NFT조회된걸 이미지로 그대로 출력한다
+    // ⭐animalType⭐은 MintAnimalToken.sol 파일로 부터 불러옴⭐⭐⭐⭐⭐
   );
 };
 
