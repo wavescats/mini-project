@@ -1,14 +1,23 @@
 import { Button, Grid, Text, Box, Flex } from "@chakra-ui/react";
 import React, { FC, useEffect, useState } from "react";
-import AnimalCard from "../components/AnimalCard";
-import { mintAnimalTokenContract, saleAnimalTokenAddress } from "../contracts";
+import SaleCardButton, {
+  StateAnimalCardArray,
+} from "../components/SaleCardButton";
+import {
+  mintAnimalTokenContract,
+  saleAnimalTokenAddress,
+  saleAnimalTokenContract,
+} from "../contracts/index";
 
 interface MyAnimalProps {
   account: string;
 }
 
 const MyAnimal: FC<MyAnimalProps> = ({ account }) => {
-  const [animalCardArray, setAnimalCardArray] = useState<string[]>();
+  const [animalCardArray, setAnimalCardArray] = useState<
+    StateAnimalCardArray[]
+  >();
+  // 👉 SaleCardButton.tsx에서 interface로 정의된 타입을 import해옴
   const [saleStatus, setSaleStatus] = useState<boolean>(false);
 
   const getAnimalTokens = async () => {
@@ -25,25 +34,32 @@ const MyAnimal: FC<MyAnimalProps> = ({ account }) => {
         // main.tsx에서는 최근순서대로 조회했으나 (배열의 맨 마지막 length - 1)
         // 👉 이번에는 for문으로 0번부터 순서대로 조회할것이다
 
-        const animalTokenId2 = await mintAnimalTokenContract.methods
+        const animalTokenId = await mintAnimalTokenContract.methods
           // 스마트컨트랙트 배포후에 나오는 함수
           .tokenOfOwnerByIndex(account, i)
           // NFT의 Id 값을 조회 (인자는 주소와, 조회하려는 배열순번)
           // 👉 for문으로 돌려서 나온 i 값을 인자로 넣어준다
           .call(); // 함수 부르기
 
-        const animalType2 = await mintAnimalTokenContract.methods
+        const animalType = await mintAnimalTokenContract.methods
           // 스마트컨트랙트 배포후에 나오는 함수
-          .animalTypess(animalTokenId2)
+          .animalTypess(animalTokenId)
           // 어떤 NFT를 뽑았는지 조회 (인자에는 NFT id를 넣는다)
           .call(); // 함수 부르기
-
-        tempAnimalCardArray.push(animalType2);
-        // 빈배열에 for문으로 돌려서 나온 i 순서대로 animalTokenId2를 push한다
+        //---------------------------------------------------
+        const animalPrice = await saleAnimalTokenContract.methods
+          // 스마트컨트랙트 배포후에 나오는 함수 👉 이번에는 판매 Contract
+          .animalTokenPrices(animalTokenId)
+          // 위에서 정의된 변수 animalTokenId 를 인자로 👉 넣어서 가격을 확인한다
+          .call(); // 함수 부르기
+        //---------------------------------------------------
+        tempAnimalCardArray.push({ animalTokenId, animalType, animalPrice });
+        // 빈배열에 for문으로 돌려서 나온 i 순서대로 animalTokenId를 push한다
+        // 👉 animalTokenId 에 맞는 / 위에 변수 animalType과 animalPrice는 자동으로 끌어옴
       }
 
       setAnimalCardArray(tempAnimalCardArray);
-      // my-animal 링크로 들어가면 👉 어떤 NFT들이 뽑혔는지 NFT 이미지배열을 출력해주는 useState
+      // 버튼을 눌러서 my-animal 링크로 들어가면 👉 어떤 NFT들이 뽑혔는지 NFT 이미지배열을 출력해주는 useState
     } catch (error) {
       console.error(error);
     }
@@ -122,13 +138,24 @@ const MyAnimal: FC<MyAnimalProps> = ({ account }) => {
         </Button>
       </Flex>
       <Grid templateColumns="repeat(10, 1fr)" gap={5} marginTop={4}>
-        {/* Grid(격자) 한줄에 4개씩 배열, 갭은 8로 준다 */}
+        {/* Grid(격자) 한줄에 10개씩 배열, 갭은 5로 준다 */}
         {/* ⭐ animalCardArray는 NFT가 담겨있는 배열이다 
       animalCardArray가 있다면 map을 한다 
       ⭐ map 함수는 배열 안에서 원하는 것만 빼내서 출력이 가능하다.*/}
         {animalCardArray &&
           animalCardArray.map((value, index) => {
-            return <AnimalCard key={index} animalType={value} />;
+            // map 👉 어떤 NFT (value) , 몇번째 (index)
+            return (
+              <SaleCardButton
+                key={index}
+                animalTokenId={value.animalTokenId}
+                animalType={value.animalType}
+                animalPrice={value.animalPrice}
+                saleStatus={saleStatus}
+                account={account}
+                // 👆 SaleCardButton.tsx 에서 가져온 Props 로 가져온 인자들 = 위에 정의된 변수
+              />
+            );
             // 👉 value : 배열 내 현재 값 (string)
             // 👉 index : 배열 내 현재 값의 인덱스 (순번)
           })}
