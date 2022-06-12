@@ -132,4 +132,11 @@ contract SaleAnimalToken {
         return onSaleAnimalTokenArray.length;
         // 판매중인 토큰의 배열 목록(길이)
     }
+
+    function getAnimalTokenPrice(uint256 _animalTokenId) view public returns (uint256) {
+        return animalTokenPrices[_animalTokenId];
+        // mapping 으로 가져온것은 대괄호[]로 인자를 가져와야한다
+        // 위에서 정의된 변수 animalTokenId 를 인자로 👉 넣어서 가격을 확인한다
+
+    }
 }

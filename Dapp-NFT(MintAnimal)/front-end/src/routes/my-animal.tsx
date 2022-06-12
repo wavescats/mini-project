@@ -27,36 +27,61 @@ const MyAnimal: FC<MyAnimalProps> = ({ account }) => {
         .balanceOf(account) // NFT 가지고 있는 갯수 조회 (인자에는 주소를 넣어야한다)
         .call(); // 함수 부르기
 
-      const tempAnimalCardArray = []; // 빈배열
+      if (balanceLength2 == 0) return;
+      // NFT 가 0 일 경우 실행 하지마라
 
-      for (let i = 0; i < parseInt(balanceLength2, 10); i++) {
-        // string 타입이기 때문에 parseInt로 숫자로 형변환을 해준다, 10진수
-        // main.tsx에서는 최근순서대로 조회했으나 (배열의 맨 마지막 length - 1)
-        // 👉 이번에는 for문으로 0번부터 순서대로 조회할것이다
+      const tempAnimalCardArray: StateAnimalCardArray[] = [];
+      // SaleCardButton.tsx에서 정의한 타입의 빈배열
 
-        const animalTokenId = await mintAnimalTokenContract.methods
-          // 스마트컨트랙트 배포후에 나오는 함수
-          .tokenOfOwnerByIndex(account, i)
-          // NFT의 Id 값을 조회 (인자는 주소와, 조회하려는 배열순번)
-          // 👉 for문으로 돌려서 나온 i 값을 인자로 넣어준다
-          .call(); // 함수 부르기
+      const response = await mintAnimalTokenContract.methods
+        // 스마트컨트랙트 배포후에 나오는 함수
+        .apiAnimalToken(account)
+        // 👇👇👇 밑에 주석처리된 부분을 MintAnimalToken.sol 에서 다 담은 함수
+        .call();
 
-        const animalType = await mintAnimalTokenContract.methods
-          // 스마트컨트랙트 배포후에 나오는 함수
-          .animalTypess(animalTokenId)
-          // 어떤 NFT를 뽑았는지 조회 (인자에는 NFT id를 넣는다)
-          .call(); // 함수 부르기
-        //---------------------------------------------------
-        const animalPrice = await saleAnimalTokenContract.methods
-          // 스마트컨트랙트 배포후에 나오는 함수 👉 이번에는 판매 Contract
-          .animalTokenPrices(animalTokenId)
-          // 위에서 정의된 변수 animalTokenId 를 인자로 👉 넣어서 가격을 확인한다
-          .call(); // 함수 부르기
-        //---------------------------------------------------
-        tempAnimalCardArray.push({ animalTokenId, animalType, animalPrice });
-        // 빈배열에 for문으로 돌려서 나온 i 순서대로 animalTokenId를 push한다
-        // 👉 animalTokenId 에 맞는 / 위에 변수 animalType과 animalPrice는 자동으로 끌어옴
-      }
+      response.map((value: StateAnimalCardArray) => {
+        // apiAnimalToken 함수로 부터 나오는 value값을 map해온다
+        tempAnimalCardArray.push({
+          animalTokenId: value.animalTokenId,
+          animalType: value.animalType,
+          animalPrice: value.animalPrice,
+        });
+      });
+      // tempAnimalCardArray배열에 push
+
+      console.log(tempAnimalCardArray);
+
+      // 블록체인 백엔드 부분을 프론트엔드에서 구현하다보니 불러오는 시간이 너무 오래걸려서
+      // 이 부분은 MintAnimalToken.sol 파일로 옮겨감
+      // ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
+      // for (let i = 0; i < parseInt(balanceLength2, 10); i++) {
+      //   // string 타입이기 때문에 parseInt로 숫자로 형변환을 해준다, 10진수
+      //   // main.tsx에서는 최근순서대로 조회했으나 (배열의 맨 마지막 length - 1)
+      //   // 👉 이번에는 for문으로 0번부터 순서대로 조회할것이다
+
+      //   const animalTokenId = await mintAnimalTokenContract.methods
+      //     // 스마트컨트랙트 배포후에 나오는 함수
+      //     .tokenOfOwnerByIndex(account, i)
+      //     // NFT의 Id 값을 조회 (인자는 주소와, 조회하려는 배열순번)
+      //     // 👉 for문으로 돌려서 나온 i 값을 인자로 넣어준다
+      //     .call(); // 함수 부르기
+
+      //   const animalType = await mintAnimalTokenContract.methods
+      //     // 스마트컨트랙트 배포후에 나오는 함수
+      //     .animalTypess(animalTokenId)
+      //     // 어떤 NFT를 뽑았는지 조회 (인자에는 NFT id를 넣는다)
+      //     .call(); // 함수 부르기
+      //   //---------------------------------------------------
+      //   const animalPrice = await saleAnimalTokenContract.methods
+      //     // 스마트컨트랙트 배포후에 나오는 함수 👉 이번에는 판매 Contract
+      //     .animalTokenPrices(animalTokenId)
+      //     // 위에서 정의된 변수 animalTokenId 를 인자로 👉 넣어서 가격을 확인한다
+      //     .call(); // 함수 부르기
+      //   //---------------------------------------------------
+      //   tempAnimalCardArray.push({ animalTokenId, animalType, animalPrice });
+      //   // 빈배열에 for문으로 돌려서 나온 i 순서대로 animalTokenId를 push한다
+      //   // 👉 animalTokenId 에 맞는 / 위에 변수 animalType과 animalPrice는 자동으로 끌어옴
+      // } ⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐
 
       setAnimalCardArray(tempAnimalCardArray);
       // 버튼을 눌러서 my-animal 링크로 들어가면 👉 어떤 NFT들이 뽑혔는지 NFT 이미지배열을 출력해주는 useState
