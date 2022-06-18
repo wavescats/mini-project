@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Main from "./routes/main";
 import MyAnimal from "./routes/my-animal";
+import SaleAnimal from "./routes/sale-animal";
 
 const App: FC = () => {
   const [account, setAccount] = useState<string>("");
@@ -40,6 +41,10 @@ const App: FC = () => {
           <Route path="/" element={<Main account={account} />} />
           <Route path="my-animal" element={<MyAnimal account={account} />} />
           {/* path는 http://localhost:3000/my-animal 라는 뜻 / account는 👉 나의 메타마스크 주소*/}
+          <Route
+            path="sale-animal"
+            element={<SaleAnimal account={account} />}
+          />
         </Routes>
       </Layout>
     </BrowserRouter>

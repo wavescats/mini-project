@@ -30,6 +30,11 @@ const Layout: FC = ({ children }) => {
           </Button>
         </Link>
         {/* 버튼을 누르면 페이지 전환하는 구현 */}
+        <Link to="sale-animal">
+          <Button size="sm" colorScheme="green">
+            Sale Animal
+          </Button>
+        </Link>
       </Flex>
       <Flex
         direction="column"
