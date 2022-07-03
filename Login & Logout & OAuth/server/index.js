@@ -4,7 +4,11 @@ const app = express();
 const port = 5000;
 const mongoose = require("mongoose");
 // Mongoose는 Node.js와 MongoDB를 연결해주는 ODM
+const config = require("./config/key");
 const bodyParser = require("body-parser");
+// 프론트엔드(client) 에서 로그인 정보(email, 아이디, 비밀번호 등)을
+// 입력하면 서버에서 받아줘야하는데
+// 로그인정보 (Body) 를 분석(parse)해서 req.body로 출력해주는것을 👉 body-parser라고 한다
 const { User } = require("./model/User");
 
 app.use(bodyParser.urlencoded({ extended: true }));
