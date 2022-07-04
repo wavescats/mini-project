@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 // 비밀번호를 암호화 시키는 모듈 bcrypt
 const saltRounds = 10;
 // salt의 자리수 설정 = 10 자리
+const jwt = require("jsonwebtoken");
 const userSchema = mongoose.Schema({
   name: {
     // 아이디
@@ -72,6 +73,41 @@ userSchema.pre("save", function (next) {
     // 비밀번호가 아니라 다른걸 입력할때 (바꿀때는) 그냥 next() 실행
   }
 });
+
+userSchema.methods.realPassword = function (plainPW, call) {
+  // 원래 비밀번호 123450 <ㅡ> 암호화된 비밀번호 x2jaj2L5sgRmjaNBwRmyE...
+  // 두개를 비교하여 맞는지 체크해야하는데
+  // 암호화된 비밀번호는 다시 복호화할수 없기때문에
+  // 체크할 비밀번호를 암호화하여 암호화된 비밀번호랑 비교해야한다
+  bcrypt.compare(plainPW, this.password, function (err, really) {
+    // req.body.password, userSchema에 비밀번호, 함수실행
+    if (err) return call(err); // 비밀번호가 같지 않다면 에러발생
+    call(null, really); // 비밀번호를 암호화해서 hash화 된 비밀번호와 같다면
+    // 에러는 없고 (null), true를 반환
+  });
+};
+
+userSchema.methods.getToken = function (caller) {
+  // jsonwebtoken(jwt)를 이용해서 token 생성하기
+
+  var user = this;
+  // this 는 위에 userSchema로 정의된 json들을 가리킨다 👆👆👆👆
+
+  var token = jwt.sign(user._id.toHexString(), "getLoginToken");
+  // 데이터베이스의 고유번호 user의 _id를 가져온다
+  // toHexString() 은 순수한 데이터 자체를 가져온다는 뜻
+
+  // user._id + 'getLoginToken' = token
+  // 'getLoginToken' 만으로도 token을 가져올수 있기때문에 기억해둬야한다
+
+  user.token = token;
+  user.save(function (err, userToken) {
+    if (err) return caller(err); // 에러가 있다면 에러발생
+    caller(null, userToken);
+    // user의 _id에 맞게 token을 잘 받아왔으면 (save)
+    // save가 잘 되었을 경우 에러는 없고(null) userToken에 정보를 전달해준다
+  });
+};
 
 const User = mongoose.model("User", userSchema);
 // 스키마를 model로 감싸준다
