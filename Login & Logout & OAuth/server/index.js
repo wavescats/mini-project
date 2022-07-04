@@ -9,12 +9,14 @@ const bodyParser = require("body-parser");
 // 프론트엔드(client) 에서 로그인 정보(email, 아이디, 비밀번호 등)을
 // 입력하면 서버에서 받아줘야하는데
 // 로그인정보 (Body) 를 분석(parse)해서 req.body로 출력해주는것을 👉 body-parser라고 한다
+const cookieParser = require("cookie-parser");
 const { User } = require("./model/User");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 // 👉 app에서 x-www-form-urlencoded 라는 파일을 분석해서 가져온다
 app.use(bodyParser.json());
 // 👉 app에서 json파일을 분석해서 가져온다
+app.use(cookieParser());
 
 mongoose
   .connect(config.mongoURI)
@@ -54,6 +56,46 @@ app.post("/api/users/register", (req, res) => {
       // userInfo에 담긴 정보를 클라이언트로
       // 성공했다는 뜻(200) 을 json형식으로 전해준다
       signupSuccess: true,
+    });
+  });
+});
+
+app.post("/api/users/login", (req, res) => {
+  User.findOne({ email: req.body.email }, (err, user) => {
+    // 요청된 이메일이 데이터베이스에서 있는지 찾는다
+    // 몽고DB 메소드 'findOne'
+    if (!user) {
+      // User에서 email: req.body.email 으로 요청받은 user 이메일이 없다면
+      return res.json({
+        // 리턴을 하는데 json 데이터로 응답해준다
+        loginSuccess: false,
+        message: "제공된 이메일에 해당하는 유저가 없습니다",
+      }); // json 데이터 👆
+    }
+
+    user.realPassword(req.body.password, (err, really) => {
+      // 요청된 이메일이 데이터베이스에 있다면 비밀번호가 맞는 비밀번호인지 확인한다
+      // user의 password, 함수실행
+      if (!really)
+        // req.body.password <ㅡ> userSchema에 비밀번호가 같지 않다면
+        return res.json({
+          // 리턴을 하는데 json 데이터로 응답해준다
+          loginSuccess: false,
+          message: "비밀번호가 틀렸습니다",
+        }); // json 데이터 👆
+
+      user.getToken((err, userToken) => {
+        if (err) return res.status(400).send(err);
+        // 실패했다는 뜻(400)
+        res
+          .cookie("x_auth", userToken.token)
+          // 토큰을 저장하는곳을 정한다 쿠키 or 로컬스토리지 or 세션
+          // 쿠키에 저장된 이름, 토큰
+          .status(200)
+          .json({ loginSuccess: true, userId: user._id });
+        // 비밀번호까지 맞다면 토큰을 생성해준다
+        // json 데이터 👆
+      });
     });
   });
 });
