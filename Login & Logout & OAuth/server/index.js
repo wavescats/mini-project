@@ -1,5 +1,4 @@
 const express = require("express");
-// node js 의 라이브러리 express
 const app = express();
 const port = 5000;
 const mongoose = require("mongoose");
@@ -11,6 +10,7 @@ const bodyParser = require("body-parser");
 // 로그인정보 (Body) 를 분석(parse)해서 req.body로 출력해주는것을 👉 body-parser라고 한다
 const cookieParser = require("cookie-parser");
 const { User } = require("./model/User");
+const { auth } = require("./middleware/auth");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 // 👉 app에서 x-www-form-urlencoded 라는 파일을 분석해서 가져온다
@@ -27,11 +27,6 @@ mongoose
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
-  // localhost:5000/ 주소로 접속되었을때 "Hello World!" 문구가 출력된다
-});
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
 });
 
 app.post("/api/users/register", (req, res) => {
@@ -98,4 +93,38 @@ app.post("/api/users/login", (req, res) => {
       });
     });
   });
+});
+
+// auth.js 에서 next() 가 실행된다면
+// /api/users/auth", auth, 👈 에러나면 여기서 막힘 ⭐ next 실행시 다음으로 넘어감 👉 (req, res)
+app.get("/api/users/auth", auth, (req, res) => {
+  // 👇👇👇 여기가 실행된다는 건 👇👇👇
+  // 미들웨어를 통과해서 Auth 가 ture 라는 뜻이다
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true,
+    // role 0 👉 이면 일반유저 : 0이 아니면 관리자
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image,
+  }); // json 데이터로 반환해준다 👆
+});
+
+//--------------로그아웃 Route---------------
+app.get("/api/users/logout", auth, (req, res) => {
+  User.findOneAndUpdate({ _id: req.user._id }, { token: "" }, (err, user) => {
+    // 'findOneAndUpdate' 유저를 찾아서 데이터를 업데이트 시킨다
+    // 아이디는 auth.js 에서 req.user로 가져와서 찾는다, ⭐ 토큰은 지워준다
+    if (err) return res.json({ logoutSuccess: false, error: true });
+    // 에러가 발생했다면 json 데이터로 리턴
+    return res.status(200).send({ logoutSuccess: true });
+    // 성공했다면 (200) json 데이터로 리턴
+  });
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
 });
