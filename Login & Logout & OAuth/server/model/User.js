@@ -50,7 +50,7 @@ userSchema.pre("save", function (next) {
   // 몽구스의 메소드 'pre'
   // 유저의 정보롤 userSchema에 "save"(저장) 하기 전에 함수를 실행한다
   // 어디에서 실행되는지 index.js 에서 자리표시
-  var user = this;
+  let user = this;
   // this 는 위에 userSchema로 정의된 json들을 가리킨다 👆👆👆👆
 
   if (user.isModified("password")) {
@@ -90,10 +90,10 @@ userSchema.methods.realPassword = function (plainPW, call) {
 userSchema.methods.getToken = function (caller) {
   // jsonwebtoken(jwt)를 이용해서 token 생성하기
 
-  var user = this;
+  let user = this;
   // this 는 위에 userSchema로 정의된 json들을 가리킨다 👆👆👆👆
 
-  var token = jwt.sign(user._id.toHexString(), "getLoginToken");
+  let token = jwt.sign(user._id.toHexString(), "getLoginToken");
   // 데이터베이스의 고유번호 user의 _id를 가져온다
   // toHexString() 은 순수한 데이터 자체를 가져온다는 뜻
 
@@ -106,6 +106,25 @@ userSchema.methods.getToken = function (caller) {
     caller(null, userToken);
     // user의 _id에 맞게 token을 잘 받아왔으면 (save)
     // save가 잘 되었을 경우 에러는 없고(null) userToken에 정보를 전달해준다
+  });
+};
+
+userSchema.statics.findToken = function (token, call) {
+  let user = this;
+
+  jwt.verify(token, "getLoginToken", function (err, decode) {
+    // verify 는 복호화 시키는 메소드
+    // token, 'getLoginToken', 함수실행
+    // jwt 토큰을 만들때 같이 생성했던 임의의 이름 'getLoginToken'
+    // 👉 user._id + 'getLoginToken' = token
+
+    user.findOne({ _id: decode, token: token }, function (err, user) {
+      // 디코드된 아이디, 토큰 값이 데이터베이스에서 있는지 찾는다
+      // 몽고DB 메소드 'findOne'
+      if (err) return call(err); // 에러가 있다면 에러발생
+      call(null, user);
+      // 찾은 값이 일치하는경우 에러는 없고(null) user에 정보를 전달해준다
+    });
   });
 };
 
